@@ -1,61 +1,48 @@
-# Netflix Platform Application
+# StreamSphere
 
 ## Overview
 
-This repository contains the application source code for the Netflix Platform.
+StreamSphere is a polished Netflix-inspired application with a React + Vite frontend and a Spring Boot backend. It serves a curated catalog of fictional movies through REST APIs and presents them in a rich, animated landing experience.
 
-The project consists of two services.
+## Features
 
-- React Frontend
-- Spring Boot Backend
-
-The application is containerized using Docker and deployed to Google Kubernetes Engine using Jenkins and Kubernetes.
-
----
+- Responsive dark-themed Netflix-style landing page
+- Hero banner with featured content
+- Trending, popular, and continue-watching sections
+- Multi-page experience with Home, Discover, My List, and Coming Soon views
+- Movie detail modal with synopsis and metadata
+- Local watchlist interactions with animated UI feedback
+- Dockerized frontend and backend deployment
 
 ## Architecture
 
-React
+- Frontend: React + Vite + Nginx
+- Backend: Spring Boot 3 + Java 21 + Maven
+- Data: Static movie catalog served from JSON
+- Deployment: Docker Compose
 
-↓
+## API Endpoints
 
-Spring Boot
+- GET /api/health
+- GET /api/version
+- GET /api/movies
+- GET /api/movies/{id}
 
-↓
+## Run Locally
 
-REST API
+```bash
+docker compose up --build
+```
 
-↓
+Then open:
 
-JSON (v1)
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8080
 
-↓
+## Verification
 
-PostgreSQL (v2)
+The project was verified with:
 
----
-
-## Technology Stack
-
-Frontend
-
-- React
-- Vite
-- Nginx
-
-Backend
-
-- Java 21
-- Spring Boot
-- Maven
-
-DevOps
-
-- Docker
-- Jenkins
-- SonarQube
-- Artifact Registry
-- Kubernetes
-- Gateway API
-
-Dummy line for commit
+- Maven tests for the backend
+- Vite production build for the frontend
+- Docker Compose configuration validation
