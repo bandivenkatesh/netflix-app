@@ -347,8 +347,33 @@ pipeline {
       }
       steps {
         sh """
+            set -eu
             gcloud builds submit backend \
-              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-backend:${BUILD_NUMBER}
+              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-backend:${BUILD_NUMBER} \
+              --async
+
+            BUILD_ID=$(gcloud builds list \
+              --limit=1 \
+              --sort-by=~createTime \
+              --format='value(id)')
+
+            echo "[INFO] Waiting for backend Cloud Build: ${BUILD_ID}"
+            for i in $(seq 1 30); do
+              STATUS=$(gcloud builds describe "$BUILD_ID" --format='value(status)' 2>/dev/null || true)
+              echo "[INFO] Backend build status: ${STATUS:-PENDING}"
+              if [ "$STATUS" = "SUCCESS" ]; then
+                echo "[SUCCESS] Backend Cloud Build completed successfully."
+                break
+              elif [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "CANCELLED" ] || [ "$STATUS" = "ERROR" ]; then
+                echo "[ERROR] Backend Cloud Build failed with status: ${STATUS}"
+                exit 1
+              fi
+              if [ "$i" -eq 30 ]; then
+                echo "[ERROR] Backend Cloud Build did not finish in time."
+                exit 1
+              fi
+              sleep 30
+            done
         """
       }
     }
@@ -359,8 +384,33 @@ pipeline {
       }
       steps {
         sh """
+            set -eu
             gcloud builds submit frontend \
-              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-frontend:${BUILD_NUMBER}
+              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-frontend:${BUILD_NUMBER} \
+              --async
+
+            BUILD_ID=$(gcloud builds list \
+              --limit=1 \
+              --sort-by=~createTime \
+              --format='value(id)')
+
+            echo "[INFO] Waiting for frontend Cloud Build: ${BUILD_ID}"
+            for i in $(seq 1 30); do
+              STATUS=$(gcloud builds describe "$BUILD_ID" --format='value(status)' 2>/dev/null || true)
+              echo "[INFO] Frontend build status: ${STATUS:-PENDING}"
+              if [ "$STATUS" = "SUCCESS" ]; then
+                echo "[SUCCESS] Frontend Cloud Build completed successfully."
+                break
+              elif [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "CANCELLED" ] || [ "$STATUS" = "ERROR" ]; then
+                echo "[ERROR] Frontend Cloud Build failed with status: ${STATUS}"
+                exit 1
+              fi
+              if [ "$i" -eq 30 ]; then
+                echo "[ERROR] Frontend Cloud Build did not finish in time."
+                exit 1
+              fi
+              sleep 30
+            done
         """
       }
     }
