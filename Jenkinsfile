@@ -1,7 +1,5 @@
 pipeline {
-  agent {
-    label 'kaniko'
-  }
+  agent any
 
   options {
     buildDiscarder(logRotator(numToKeepStr: '20'))
