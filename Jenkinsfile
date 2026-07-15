@@ -8,7 +8,7 @@ pipeline {
     disableConcurrentBuilds()
     skipDefaultCheckout(true)
     timestamps()
-    ansiColor('xterm')
+    // ansiColor('xterm')
   }
 
   parameters {
