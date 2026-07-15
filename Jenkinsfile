@@ -220,13 +220,14 @@ pipeline {
     stage('Build Backend Docker Image using Kaniko') {
       agent {
         kubernetes {
-          inheritFrom 'kaniko'
+          label 'kaniko'
+          defaultContainer 'kaniko'
         }
       }
       steps {
         deleteDir()
         unstash 'app-source'
-        container(name: 'kaniko', shell: '/busybox/sh') {
+        container('kaniko') {
           sh '''
             set -eu
             /kaniko/executor \
@@ -258,13 +259,14 @@ pipeline {
     stage('Build Frontend Docker Image using Kaniko') {
       agent {
         kubernetes {
-          inheritFrom 'kaniko'
+          label 'kaniko'
+          defaultContainer 'kaniko'
         }
       }
       steps {
         deleteDir()
         unstash 'app-source'
-        container(name: 'kaniko', shell: '/busybox/sh') {
+        container('kaniko') {
           sh '''
             set -eu
             /kaniko/executor \
@@ -336,6 +338,7 @@ pipeline {
             set -eu
             git config user.name "Jenkins"
             git config user.email "jenkins@local"
+            git diff --cached --quiet || \
             git commit -m "Deploy Build ${BUILD_NUMBER}"
           '''
         }
