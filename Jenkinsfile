@@ -341,109 +341,27 @@ pipeline {
       }
     }
 
-    stage('Build Backend Docker Image using Kaniko') {
+    stage('Build & Push Backend Image') {
       when {
         expression { !params.SKIP_DOCKER_BUILD }
       }
-      agent {
-        kubernetes {
-          label 'kaniko'
-          defaultContainer 'kaniko'
-        }
-      }
       steps {
-        echo "[STAGE] Build Backend Docker Image - Using Kaniko to build and push backend image to Artifact Registry."
-        deleteDir()
-        unstash 'app-source'
-        container('kaniko') {
-          sh '''
-            set -eu
-            echo "[INFO] Kaniko building backend image:"
-            echo "       Context    : ${WORKSPACE}/backend"
-            echo "       Dockerfile : ${WORKSPACE}/backend/Dockerfile"
-            echo "       Destination: ${BACKEND_IMAGE}:${RESOLVED_IMAGE_TAG}"
-            /kaniko/executor \
-              --context=dir://${WORKSPACE}/backend \
-              --dockerfile=${WORKSPACE}/backend/Dockerfile \
-              --destination=${BACKEND_IMAGE}:${RESOLVED_IMAGE_TAG} \
-              --cache=true \
-              --cleanup \
-              --digest-file=${WORKSPACE}/backend-image-digest.txt
-            echo "[SUCCESS] Backend Docker image pushed. Digest: $(cat ${WORKSPACE}/backend-image-digest.txt)"
-          '''
-        }
-        stash name: 'backend-digest', includes: 'backend-image-digest.txt'
-        echo "[SUCCESS] Backend Docker image built and pushed to Artifact Registry."
+        sh """
+            gcloud builds submit backend \
+              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-backend:${BUILD_NUMBER}
+        """
       }
     }
 
-    stage('Push Backend Image') {
+    stage('Build & Push Frontend Image') {
       when {
         expression { !params.SKIP_DOCKER_BUILD }
       }
       steps {
-        echo "[STAGE] Push Backend Image - Verifying Kaniko push succeeded by checking image digest."
-        unstash 'backend-digest'
-        script {
-          def backendDigest = readFile('backend-image-digest.txt').trim()
-          if (!backendDigest) {
-            error("[ERROR] Backend image push verification failed: digest file is empty.")
-          }
-          echo "[SUCCESS] Backend image digest verified: ${backendDigest}"
-        }
-      }
-    }
-
-    stage('Build Frontend Docker Image using Kaniko') {
-      when {
-        expression { !params.SKIP_DOCKER_BUILD }
-      }
-      agent {
-        kubernetes {
-          label 'kaniko'
-          defaultContainer 'kaniko'
-        }
-      }
-      steps {
-        echo "[STAGE] Build Frontend Docker Image - Using Kaniko to build and push frontend image to Artifact Registry."
-        deleteDir()
-        unstash 'app-source'
-        container('kaniko') {
-          sh '''
-            set -eu
-            echo "[INFO] Kaniko building frontend image:"
-            echo "       Context    : ${WORKSPACE}/frontend"
-            echo "       Dockerfile : ${WORKSPACE}/frontend/Dockerfile"
-            echo "       Destination: ${FRONTEND_IMAGE}:${RESOLVED_IMAGE_TAG}"
-            /kaniko/executor \
-              --context=dir://${WORKSPACE}/frontend \
-              --dockerfile=${WORKSPACE}/frontend/Dockerfile \
-              --destination=${FRONTEND_IMAGE}:${RESOLVED_IMAGE_TAG} \
-              --cache=true \
-              --cleanup \
-              --digest-file=${WORKSPACE}/frontend-image-digest.txt
-            echo "[SUCCESS] Frontend Docker image pushed. Digest: $(cat ${WORKSPACE}/frontend-image-digest.txt)"
-          '''
-        }
-        stash name: 'frontend-digest', includes: 'frontend-image-digest.txt'
-        echo "[SUCCESS] Frontend Docker image built and pushed to Artifact Registry."
-      }
-    }
-
-    stage('Push Frontend Image') {
-      when {
-        expression { !params.SKIP_DOCKER_BUILD }
-      }
-      steps {
-        echo "[STAGE] Push Frontend Image - Verifying Kaniko push succeeded by checking image digest."
-        unstash 'frontend-digest'
-        script {
-          def frontendDigest = readFile('frontend-image-digest.txt').trim()
-          if (!frontendDigest) {
-            error("[ERROR] Frontend image push verification failed: digest file is empty.")
-          }
-          echo "[SUCCESS] Frontend image digest verified: ${frontendDigest}"
-        }
+        sh """
+            gcloud builds submit frontend \
+              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-frontend:${BUILD_NUMBER}
+        """
       }
     }
 
