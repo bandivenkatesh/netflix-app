@@ -14,7 +14,7 @@ pipeline {
     APP_REPO_URL               = 'https://github.com/bandivenkatesh/netflix-app.git'
     DEPLOYMENT_REPO_URL        = 'https://github.com/bandi2-dev/netflix-deployment.git'
     GCP_PROJECT                = 'godl-production'
-    GCP_REGION                 = 'us-central1'
+    GCP_REGION                 = 'us-central1-a'
     GKE_CLUSTER                = 'netflix-gke-dev'
     K8S_NAMESPACE              = 'dev'
     RELEASE_NAME               = 'netflix'
