@@ -346,10 +346,10 @@ pipeline {
         expression { !params.SKIP_DOCKER_BUILD }
       }
       steps {
-        sh """
+        sh '''
             set -eu
             gcloud builds submit backend \
-              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-backend:${BUILD_NUMBER}
+              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-backend:${BUILD_NUMBER} \
               --async
 
             BUILD_ID=$(gcloud builds list \
@@ -374,7 +374,7 @@ pipeline {
               fi
               sleep 30
             done
-        """
+        '''
       }
     }
 
@@ -383,10 +383,10 @@ pipeline {
         expression { !params.SKIP_DOCKER_BUILD }
       }
       steps {
-        sh """
+        sh '''
             set -eu
             gcloud builds submit frontend \
-              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-frontend:${BUILD_NUMBER}
+              --tag us-central1-docker.pkg.dev/${GCP_PROJECT}/netflix-dev/netflix-frontend:${BUILD_NUMBER} \
               --async
 
             BUILD_ID=$(gcloud builds list \
@@ -411,7 +411,7 @@ pipeline {
               fi
               sleep 30
             done
-        """
+        '''
       }
     }
 
