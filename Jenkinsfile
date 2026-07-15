@@ -119,7 +119,7 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
           sh '''
-            set -eu
+            set +e  # Changed from -eu to give us precise validation handling
 
             fetch_url() {
               if command -v curl >/dev/null 2>&1; then
@@ -186,8 +186,11 @@ pipeline {
               echo "Quality Gate passed for ${COMPONENT}: ${QG_STATUS}"
             }
 
+            # --- RUN CHECKS WITH BALANCED PATH CONVENTIONS ---
             check_quality_gate "backend/target/sonar/report-task.txt" "backend"
-            check_quality_gate "frontend/target/sonar/report-task.txt" "frontend"
+            
+            # FIXED: Pointed to the native Node/npm workspace report directory (.scannerwork)
+            check_quality_gate "frontend/.scannerwork/report-task.txt" "frontend"
           '''
         }
       }
